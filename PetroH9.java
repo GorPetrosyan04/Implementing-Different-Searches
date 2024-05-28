@@ -1,0 +1,187 @@
+import java.io.*;
+import java.util.*;
+
+public class PetroH9 {
+    PrintStream prt = System.out;
+    int max = 9999;
+
+    private void prtgraph(int g[][], int n) {
+        int i, j;
+        prt.printf("\n\tWeight Matrix is as follows\n\t");
+        for (i = 1; i <= n; i++) {
+            for (j = 1; j <= n; j++)
+                if (g[i][j] == max)
+                    prt.printf("-----");
+                else
+                    prt.printf("%5d", g[i][j]);
+            prt.printf("\n\t");
+        }
+    }
+
+    private void dfs(int g[][], int n, int start, int goal) {
+        prt.printf("\n\tDFS(%d->%d):", start, goal);
+        Stack<Integer> stk = new Stack<>();
+        int[] visited = new int[n + 1];
+
+        stk.push(start);
+
+        while (!stk.isEmpty()) {
+            int cur = stk.pop();
+            visited[cur] = 1;
+            prt.print(" " + cur);
+
+            if (cur == goal) {
+                return;
+            }
+
+            for (int w = 1; w <= n; w++) {
+                if (g[cur][w] != max && visited[w] == 0 && !stk.contains(w)) {
+                    stk.push(w);
+                }
+            }
+        }
+    }
+
+    private void bfs(int g[][], int n, int start, int goal) {
+        prt.printf("\n\tBFS(%d->%d):", start, goal);
+        Queue<Integer> queue = new LinkedList<>();
+        int[] visited = new int[n + 1];
+
+        queue.add(start);
+
+        while (!queue.isEmpty()) {
+            int cur = queue.remove();
+            visited[cur] = 1;
+            prt.print(" " + cur);
+
+            if (cur == goal) {
+                return;
+            }
+
+            for (int w = 1; w <= n; w++) {
+                if (g[cur][w] != max && visited[w] == 0 && !queue.contains(w)) {
+                    queue.add(w);
+                }
+            }
+        }
+    }
+
+    private void prims(int g[][], int n) {
+        prt.printf("\n\tMST from node 1:");
+        int[] visit = new int[n + 1];
+        int[] lowcost = new int[n + 1];
+        int[] closest = new int[n + 1];
+
+        visit[1] = 1; // vertex 1 is visited
+
+        for (int i = 2; i <= n; i++) {
+            lowcost[i] = g[1][i]; // cost matrix is the weight of edges
+            closest[i] = 1;
+            visit[i] = 0; // vertex i is not visited
+        }
+
+        for (int i = 2; i <= n; i++) {
+            int min = lowcost[2];
+            int k = 2;
+
+            for (int j = 3; j <= n; j++) {
+                if (lowcost[j] < min) {
+                    min = lowcost[j];
+                    k = j;
+                }
+            }
+
+            prt.printf("\n\t%d ---> %d", k, closest[k]); // Print the selected edge
+            visit[k] = 1; // add k to visited vertices.
+            lowcost[k] = max; // k is processed
+
+            for (int j = 2; j <= n; j++) {
+                if (visit[j] == 0 && g[k][j] < lowcost[j]) {
+                    lowcost[j] = g[k][j];
+                    closest[j] = k;
+                }
+            }
+        }
+    }
+
+    private void dijkstra(int g[][], int n) {
+        prt.printf("\n\tDijkstra shortest path from node 1:");
+        // Implement Dijkstra's algorithm here
+    }
+
+    private void process(String args[]) {
+        prt.printf("\n\tProcess method:\n\t Gets input file name from program arguments." +
+                "\n\t  Reads from input file graph information," +
+                "\n\t  prints them, and assumes node no. starts from 1." +
+                "\n\t  Next calls the above algorithms.");
+        if (args.length < 1) {
+            System.out.printf("\n\tOOOPS Invalid No. of arguments!");
+            return;
+        }
+        int i, j, k, wt, n, fromnode, tonode;
+        int g[][], nodes, edges;
+        String fname, graphtype;
+
+        fname = args[0];
+        prt.printf("\n\t\tInput filename: %s", fname);
+
+        try {
+            Scanner inf = new Scanner(new File(fname));
+
+            nodes = inf.nextInt();
+            g = new int[nodes + 1][nodes + 1];
+
+            for (i = 1; i <= nodes; i++)
+                for (j = 1; j <= nodes; j++)
+                    g[i][j] = max;
+
+            graphtype = inf.next();
+            edges = inf.nextInt();
+
+            if (graphtype.compareTo("directed") == 0) {
+                for (k = 1; k <= edges; k++) {
+                    i = inf.nextInt();
+                    j = inf.nextInt();
+                    wt = inf.nextInt();
+                    g[i][j] = wt;
+                }
+            } else {
+                for (k = 1; k <= edges; k++) {
+                    i = inf.nextInt();
+                    j = inf.nextInt();
+                    wt = inf.nextInt();
+                    g[i][j] = g[j][i] = wt;
+                }
+            }
+
+            prtgraph(g, nodes);
+
+            n = inf.nextInt();
+            for (k = 1; k <= n; k++) {
+                fromnode = inf.nextInt();
+                tonode = inf.nextInt();
+                dfs(g, nodes, fromnode, tonode);
+                bfs(g, nodes, fromnode, tonode);
+            }
+
+            prims(g, nodes);
+
+            inf.close();
+        } catch (Exception e) {
+            prt.printf("\nI/O Error %s", e);
+        }
+    }
+
+    public static void main(String[] args) throws Exception {
+        System.out.printf("\n\tOPTIONAL Hwk-9 implements 4 graph algorithms:" +
+                "\n\t Depth first search(DFS) and Breadth first search(BFS) from start node to goal node," +
+                "\n\t Prims minimum spanning tree (MST) and Dijkstras single source shortest path." +
+                "\n\t   To Compile: javac  PetroH9.java" +
+                "\n\t   To Execute: java   PetroH9 inputfilename");
+
+        PetroH9 g = new PetroH9();
+        g.process(args);
+
+        System.out.printf("\n\tAuthor: Gor Petrosyan Date: " + java.time.LocalDate.now());
+    }
+}
